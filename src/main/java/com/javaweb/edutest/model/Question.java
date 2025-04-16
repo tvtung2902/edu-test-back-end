@@ -10,7 +10,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-public class Question {
+public class Question extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,6 +18,8 @@ public class Question {
     private String content;
 
     private String explanation;
+
+    private String image;
 
     @ManyToMany
     @JoinTable(name = "question_category",

@@ -11,7 +11,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Inheritance(strategy = InheritanceType.JOINED)
-public class Comment {
+public class Comment extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
