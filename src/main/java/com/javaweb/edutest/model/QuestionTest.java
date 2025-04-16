@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "question_test")
-public class QuestionTest {
+public class QuestionTest extends AbstractEntity {
     @EmbeddedId
     private QuestionTestPK id;
 
