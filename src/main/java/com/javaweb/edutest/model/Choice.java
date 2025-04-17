@@ -10,7 +10,7 @@ import java.util.HashSet;
 @Entity
 @Getter
 @Setter
-public class Choice {
+public class Choice extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

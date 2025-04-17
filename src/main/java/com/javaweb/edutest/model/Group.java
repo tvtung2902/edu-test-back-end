@@ -11,7 +11,7 @@ import java.util.HashSet;
 @Getter
 @Setter
 @Table(name = "class")
-public class Group {
+public class Group extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
