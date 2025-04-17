@@ -18,6 +18,7 @@ public class Group extends AbstractEntity {
     private String name;
     private String description;
     private String code;
+    private String image;
 
     @ManyToMany(mappedBy = "ownerGroups")
     private Set<User> members = new HashSet<>();

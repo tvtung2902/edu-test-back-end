@@ -2,6 +2,8 @@ package com.javaweb.edutest.service.impl;
 
 import com.javaweb.edutest.dto.request.GroupRequestDTO;
 import com.javaweb.edutest.dto.response.GroupResponseDTO;
+import com.javaweb.edutest.dto.response.GroupResponseDTOWithCount;
+import com.javaweb.edutest.dto.response.PageResponseDTO;
 import com.javaweb.edutest.exception.ResourceNotFoundException;
 import com.javaweb.edutest.mapper.GroupMapper;
 import com.javaweb.edutest.model.Group;
@@ -10,11 +12,17 @@ import com.javaweb.edutest.model.User;
 import com.javaweb.edutest.repository.GroupRepository;
 import com.javaweb.edutest.repository.TestRepository;
 import com.javaweb.edutest.repository.UserRepository;
+import com.javaweb.edutest.service.CloudinaryService;
 import com.javaweb.edutest.service.GroupService;
+import com.javaweb.edutest.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -26,10 +34,14 @@ public class GroupServiceImpl implements GroupService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final TestRepository testRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Override
-    public List<GroupResponseDTO> getGroups() {
-        return groupMapper.toGroupResponseDTOs(groupRepository.findAll());
+    public PageResponseDTO<GroupResponseDTOWithCount> getGroups(String name, int pageNo, int pageSize) {
+        int totalRecords = groupRepository.countByNameContainingIgnoreCase(name);
+        Pageable pageable = PaginationUtil.createPageable(totalRecords, pageNo, pageSize);
+        Page<GroupResponseDTOWithCount> groupResponseDTOs = groupRepository.findGroups(name, pageable);
+        return PaginationUtil.toPageResponse(groupResponseDTOs);
     }
 
     @Override
@@ -43,9 +55,14 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public long addGroup(GroupRequestDTO groupRequestDTO) {
+    public long addGroup(GroupRequestDTO groupRequestDTO, MultipartFile image) throws IOException {
         Group newGroup = groupMapper.toGroup(groupRequestDTO);
-        newGroup = groupRepository.save(newGroup);
+        try {
+            String imageUrl = cloudinaryService.uploadFile(image);
+            newGroup.setImage(imageUrl);
+        } finally {
+            newGroup = groupRepository.save(newGroup);
+        }
         return newGroup.getId();
     }
 
