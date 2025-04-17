@@ -12,5 +12,6 @@ public class CategoryResponseDTO {
     private long id;
     private String name;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    Set<QuestionResponseDTO> questions;
+    private Set<QuestionResponseDTO> questions;
+    private int numberOfQuestions;
 }

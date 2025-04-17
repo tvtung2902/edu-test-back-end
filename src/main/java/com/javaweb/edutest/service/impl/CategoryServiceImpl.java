@@ -33,7 +33,7 @@ public class CategoryServiceImpl implements CategoryService {
         int totalRecords = categoryRepository.countByNameContainingIgnoreCase(searchName);
         Pageable pageable = PaginationUtil.createPageable(pageNo, pageSize, totalRecords);
         Page<CategoryWithQuestionCountDTO> categories = categoryRepository.findCategoriesWithQuestionCountDTO(searchName, pageable);
-        return toPageResponse(categories);
+        return PaginationUtil.toPageResponse(categories);
     }
 
     @Override
@@ -66,12 +66,12 @@ public class CategoryServiceImpl implements CategoryService {
         );
     }
 
-    private PageResponseDTO<?> toPageResponse(Page<CategoryWithQuestionCountDTO> pageCategories) {
-        return PageResponseDTO.builder()
-                .data(pageCategories.getContent())
-                .pageNo(pageCategories.getNumber() + 1)
-                .pageSize(pageCategories.getSize())
-                .totalPages(pageCategories.getTotalPages())
-                .build();
-    }
+//    private PageResponseDTO<?> toPageResponse(Page<CategoryWithQuestionCountDTO> pageCategories) {
+//        return PageResponseDTO.builder()
+//                .data(pageCategories.getContent())
+//                .pageNo(pageCategories.getNumber() + 1)
+//                .pageSize(pageCategories.getSize())
+//                .totalPages(pageCategories.getTotalPages())
+//                .build();
+//    }
 }
