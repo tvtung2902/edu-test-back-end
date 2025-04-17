@@ -9,7 +9,6 @@ import java.util.Map;
 
 public interface CloudinaryService {
     String uploadFile(MultipartFile file) throws IOException;
-    void uploadFileOfQuestion(QuestionRequestDTO questionRequestDTO,
-                              Map<String, MultipartFile> images) throws IOException;
-    void uploadFileOfTest(TestRequestDTO testRequestDTO, MultipartFile image) throws IOException;
+    boolean deleteFile(String publicId) throws IOException;
+    String uploadFileOfTest(MultipartFile image) throws IOException;
 }

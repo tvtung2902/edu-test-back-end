@@ -25,32 +25,41 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         return uploadResult.get("secure_url").toString();
     }
 
+//    @Override
+//    public void uploadFileOfQuestion(QuestionRequestDTO questionRequestDTO, Map<String, MultipartFile> images) throws IOException {
+//        if (images.get("imageQuestion") != null){
+//            String imageQuestionUrl = uploadFile(images.get("imageQuestion"));
+//            questionRequestDTO.setImage(imageQuestionUrl);
+//        }
+//        List<ChoiceRequestDTO> choices = questionRequestDTO.getChoices();
+//        if(choices != null && !choices.isEmpty()) {
+//            for (int i = 0; i < choices.size(); i++){
+//                String key = "imageChoices" + i;
+//                if(images.containsKey(key)){
+//                    MultipartFile image = images.get(key);
+//                    if (image != null && !image.isEmpty()){
+//                        String imageChoiceUrl = uploadFile(image);
+//                        choices.get(i).setImage(imageChoiceUrl);
+//                    }
+//                }
+//            }
+//        }
+//    }
+
     @Override
-    public void uploadFileOfQuestion(QuestionRequestDTO questionRequestDTO, Map<String, MultipartFile> images) throws IOException {
-        if (images.get("imageQuestion") != null){
-            String imageQuestionUrl = uploadFile(images.get("imageQuestion"));
-            questionRequestDTO.setImage(imageQuestionUrl);
+    public String uploadFileOfTest(MultipartFile image) throws IOException {
+        if (image != null){
+            return uploadFile(image);
         }
-        List<ChoiceRequestDTO> choices = questionRequestDTO.getChoices();
-        if(choices != null && !choices.isEmpty()) {
-            for (int i = 0; i < choices.size(); i++){
-                String key = "imageChoices" + i;
-                if(images.containsKey(key)){
-                    MultipartFile image = images.get(key);
-                    if (image != null && !image.isEmpty()){
-                        String imageChoiceUrl = uploadFile(image);
-                        choices.get(i).setImage(imageChoiceUrl);
-                    }
-                }
-            }
-        }
+        return null;
     }
 
     @Override
-    public void uploadFileOfTest(TestRequestDTO testRequestDTO, MultipartFile image) throws IOException {
-//        if (image != null){
-//            String imageQuestionUrl = uploadFile(image);
-//            testRequestDTO.setImage(imageQuestionUrl);
-//        }
+    public boolean deleteFile(String publicId) throws IOException {
+        if (publicId == null || publicId.trim().isEmpty()) {
+            return false;
+        }
+        Map result = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+        return "ok".equals(result.get("result"));
     }
 }
