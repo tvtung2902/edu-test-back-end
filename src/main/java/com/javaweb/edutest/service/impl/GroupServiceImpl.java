@@ -89,15 +89,19 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public void updateGroup(long groupId, GroupRequestDTO groupRequestDTO, MultipartFile image) throws IOException {
+    public String updateGroup(long groupId, GroupRequestDTO groupRequestDTO, MultipartFile image) throws IOException {
         Group currentGroup = findGroupById(groupId);
         try{
-            String imageUrl = cloudinaryService.uploadFile(image);
-            currentGroup.setImage(imageUrl);
+            if(groupRequestDTO.isChangedImg()){
+                cloudinaryService.deleteFile(currentGroup.getImage());
+                String imageUrl = cloudinaryService.uploadFile(image);
+                currentGroup.setImage(imageUrl);
+            }
         } finally {
             groupMapper.updateGroup(currentGroup, groupRequestDTO);
             groupRepository.save(currentGroup);
         }
+        return currentGroup.getImage();
     }
 
     @Override

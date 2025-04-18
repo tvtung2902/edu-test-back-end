@@ -111,8 +111,8 @@ public class GroupController {
                                        @RequestPart(value = "imageUrl", required = false) MultipartFile image
                                        ) {
         try {
-            groupService.updateGroup(groupId, groupRequestDTO, image);
-            return new ResponseData<>(HttpStatus.ACCEPTED.value(), HttpStatus.ACCEPTED.getReasonPhrase());
+             String imgUrl = groupService.updateGroup(groupId, groupRequestDTO, image);
+            return new ResponseData<>(imgUrl, HttpStatus.ACCEPTED.value(), HttpStatus.ACCEPTED.getReasonPhrase());
         } catch (Exception e) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }

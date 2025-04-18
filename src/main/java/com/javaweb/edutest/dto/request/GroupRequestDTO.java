@@ -8,6 +8,5 @@ import lombok.Setter;
 public class GroupRequestDTO {
     private String name;
     private String description;
-    private String image;
-
+    private boolean changedImg ;
 }
