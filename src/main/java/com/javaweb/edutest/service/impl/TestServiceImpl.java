@@ -59,12 +59,10 @@ public class TestServiceImpl implements TestService {
     public void updateTest(long testId, TestRequestDTO test, MultipartFile image) throws IOException {
         var currentTest = findTestById(testId);
         try {
-            if (image != null){
+            if(test.isChangedImg()){
+                cloudinaryService.deleteFile(currentTest.getImage());
                 String imageUrl = cloudinaryService.uploadFile(image);
                 currentTest.setImage(imageUrl);
-            }
-            else {
-                currentTest.setImage(null);
             }
         } finally {
             testMapper.updateTest(currentTest, test);

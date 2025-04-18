@@ -39,7 +39,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public PageResponseDTO<GroupResponseDTOWithCount> getGroups(String name, int pageNo, int pageSize) {
         int totalRecords = groupRepository.countByNameContainingIgnoreCase(name);
-        Pageable pageable = PaginationUtil.createPageable(totalRecords, pageNo, pageSize);
+        Pageable pageable = PaginationUtil.createPageable(pageNo, pageSize, totalRecords);
         Page<GroupResponseDTOWithCount> groupResponseDTOs = groupRepository.findGroups(name, pageable);
         return PaginationUtil.toPageResponse(groupResponseDTOs);
     }
@@ -89,10 +89,15 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public void updateGroup(long groupId, GroupRequestDTO groupRequestDTO) {
+    public void updateGroup(long groupId, GroupRequestDTO groupRequestDTO, MultipartFile image) throws IOException {
         Group currentGroup = findGroupById(groupId);
-        groupMapper.updateGroup(currentGroup, groupRequestDTO);
-        groupRepository.save(currentGroup);
+        try{
+            String imageUrl = cloudinaryService.uploadFile(image);
+            currentGroup.setImage(imageUrl);
+        } finally {
+            groupMapper.updateGroup(currentGroup, groupRequestDTO);
+            groupRepository.save(currentGroup);
+        }
     }
 
     @Override
@@ -118,8 +123,14 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public void deleteGroup(long groupId) {
-        groupRepository.deleteById(groupId);
+    public void deleteGroup(long groupId) throws IOException {
+        Group group = findGroupById(groupId);
+        try {
+            String imageUrl = group.getImage();
+            cloudinaryService.deleteFile(imageUrl);
+        } finally {
+            groupRepository.deleteById(groupId);
+        }
     }
 
     private Group findGroupById(long groupId) {

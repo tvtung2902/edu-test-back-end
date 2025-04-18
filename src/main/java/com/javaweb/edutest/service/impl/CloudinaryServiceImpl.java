@@ -15,8 +15,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CloudinaryServiceImpl implements CloudinaryService {
     private final Cloudinary cloudinary;
-    @Override
-    public String uploadFileToCloudinary(MultipartFile file) throws IOException {
+    private String uploadFileToCloudinary(MultipartFile file) throws IOException {
         Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
         return uploadResult.get("secure_url").toString();
     }
@@ -51,11 +50,11 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     }
 
     @Override
-    public boolean deleteFile(String publicId) throws IOException {
-        if (publicId == null || publicId.trim().isEmpty()) {
+    public boolean deleteFile(String file) throws IOException {
+        if (file == null || file.trim().isEmpty()) {
             return false;
         }
-        Map result = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+        Map result = cloudinary.uploader().destroy(file, ObjectUtils.emptyMap());
         return "ok".equals(result.get("result"));
     }
 }

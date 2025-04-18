@@ -23,9 +23,11 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
         g.description AS description,
         g.code AS code,
         g.image AS image,
+        g.createdAt as createdAt,
         SIZE(g.members) AS memberCount,
         SIZE(g.tests) AS testsCount
-    FROM Group g
-    WHERE LOWER(g.name) LIKE LOWER(CONCAT('%', :searchName, '%'))""")
+        FROM Group g
+        WHERE LOWER(g.name) LIKE LOWER(CONCAT('%', :searchName, '%'))
+        ORDER BY g.id DESC""")
     Page<GroupResponseDTOWithCount> findGroups(String searchName, Pageable pageable);
 }

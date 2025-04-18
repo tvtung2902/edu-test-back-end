@@ -31,6 +31,7 @@ public class GroupController {
             return new ResponseData<>(groupService.getGroups(searchName, pageNo, pageSize),
                     HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
@@ -55,7 +56,7 @@ public class GroupController {
 
     @PostMapping
     public ResponseData<?> addGroup(@RequestPart GroupRequestDTO groupRequestDTO,
-                                    @RequestPart(value = "imageUrl") MultipartFile image
+                                    @RequestPart(value = "imageUrl", required = false) MultipartFile image
                                     ) {
         try {
             return new ResponseData<>(groupService.addGroup(groupRequestDTO, image), HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
@@ -105,9 +106,12 @@ public class GroupController {
     }
 
     @PutMapping("/{groupId}")
-    public ResponseData<?> updateGroup(@PathVariable long groupId, @RequestBody GroupRequestDTO groupRequestDTO) {
+    public ResponseData<?> updateGroup(@PathVariable long groupId,
+                                       @RequestPart GroupRequestDTO groupRequestDTO,
+                                       @RequestPart(value = "imageUrl", required = false) MultipartFile image
+                                       ) {
         try {
-            groupService.updateGroup(groupId, groupRequestDTO);
+            groupService.updateGroup(groupId, groupRequestDTO, image);
             return new ResponseData<>(HttpStatus.ACCEPTED.value(), HttpStatus.ACCEPTED.getReasonPhrase());
         } catch (Exception e) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());

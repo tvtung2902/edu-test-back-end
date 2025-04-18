@@ -9,4 +9,5 @@ public class GroupRequestDTO {
     private String name;
     private String description;
     private String image;
+
 }

@@ -16,8 +16,8 @@ public interface GroupService {
     long addGroup(GroupRequestDTO groupRequestDTO, MultipartFile image) throws IOException;
     void addMembersToGroup(long groupId, Map<String, List<Long> > request);
     void addTestsToGroup(long groupId, Map<String, List<Long> > request);
-    void updateGroup(long groupId, GroupRequestDTO groupRequestDTO);
+    void updateGroup(long groupId, GroupRequestDTO groupRequestDTO, MultipartFile image) throws IOException;
     void updateMembersInGroup(long groupId, Map<String, List<Long> > request);
     void updateTestsInGroup(long groupId, Map<String, List<Long> > request);
-    void deleteGroup(long groupId);
+    void deleteGroup(long groupId) throws IOException;
 }
