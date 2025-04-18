@@ -7,22 +7,31 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/groups")
+@CrossOrigin(origins = "http://localhost:3000")
 public class GroupController {
 
     private final GroupService groupService;
 
     @GetMapping
-    public ResponseData<?> getGroups() {
+    public ResponseData<?> getGroups(
+            @RequestParam(defaultValue = "", required = false, value = "name") String searchName,
+            @RequestParam(defaultValue = "0", required = false, value = "page-no") int pageNo,
+            @RequestParam(defaultValue = "2", required = false, value = "page-size") int pageSize
+    ) {
         try {
-            return new ResponseData<>(groupService.getGroups(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+            return new ResponseData<>(groupService.getGroups(searchName, pageNo, pageSize),
+                    HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
@@ -46,10 +55,16 @@ public class GroupController {
     }
 
     @PostMapping
-    public ResponseData<?> addGroup(@RequestBody GroupRequestDTO groupRequestDTO) {
+    public ResponseData<?> addGroup(@RequestPart GroupRequestDTO groupRequestDTO,
+                                    @RequestPart(value = "imageUrl", required = false) MultipartFile image
+                                    ) {
         try {
-            return new ResponseData<>(groupService.addGroup(groupRequestDTO), HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
-        } catch (Exception e) {
+            return new ResponseData<>(groupService.addGroup(groupRequestDTO, image), HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
+        }
+        catch (IOException e){
+            return new ResponseData<>(HttpStatus.CREATED.value(), "create group success, but upload image failed");
+        }
+        catch (Exception e) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
@@ -91,10 +106,13 @@ public class GroupController {
     }
 
     @PutMapping("/{groupId}")
-    public ResponseData<?> updateGroup(@PathVariable long groupId, @RequestBody GroupRequestDTO groupRequestDTO) {
+    public ResponseData<?> updateGroup(@PathVariable long groupId,
+                                       @RequestPart GroupRequestDTO groupRequestDTO,
+                                       @RequestPart(value = "imageUrl", required = false) MultipartFile image
+                                       ) {
         try {
-            groupService.updateGroup(groupId, groupRequestDTO);
-            return new ResponseData<>(HttpStatus.ACCEPTED.value(), HttpStatus.ACCEPTED.getReasonPhrase());
+             String imgUrl = groupService.updateGroup(groupId, groupRequestDTO, image);
+            return new ResponseData<>(imgUrl, HttpStatus.ACCEPTED.value(), HttpStatus.ACCEPTED.getReasonPhrase());
         } catch (Exception e) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }

@@ -32,6 +32,4 @@ public class PaginationUtil {
                 .totalPages(page.getTotalPages())
                 .build();
     }
-
-
 }

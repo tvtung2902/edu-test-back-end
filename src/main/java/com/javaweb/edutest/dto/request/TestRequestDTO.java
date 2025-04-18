@@ -20,4 +20,5 @@ public class TestRequestDTO {
     private int duration;
     private int isPublic;
     private boolean shuffled;
+    private boolean changedImg;
 }

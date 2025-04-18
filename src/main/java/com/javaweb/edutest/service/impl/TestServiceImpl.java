@@ -1,10 +1,7 @@
 package com.javaweb.edutest.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javaweb.edutest.dto.request.TestRequestDTO;
-import com.javaweb.edutest.dto.response.CategoryWithQuestionCountDTO;
 import com.javaweb.edutest.dto.response.PageResponseDTO;
-import com.javaweb.edutest.dto.response.TestResponseDTO;
 import com.javaweb.edutest.dto.response.TestResponseDTO1;
 import com.javaweb.edutest.exception.ResourceNotFoundException;
 import com.javaweb.edutest.mapper.TestMapper;
@@ -50,10 +47,8 @@ public class TestServiceImpl implements TestService {
     public long addTest(TestRequestDTO testRequestDTO, MultipartFile image) throws IOException {
         Test newTest = testMapper.toTest(testRequestDTO);
         try{
-            if (image != null){
-                String imageUrl = cloudinaryService.uploadFileOfTest(image);
-                newTest.setImage(imageUrl);
-            }
+            String imageUrl = cloudinaryService.uploadFile(image);
+            newTest.setImage(imageUrl);
         } finally {
             testRepository.save(newTest);
         }
@@ -64,12 +59,10 @@ public class TestServiceImpl implements TestService {
     public void updateTest(long testId, TestRequestDTO test, MultipartFile image) throws IOException {
         var currentTest = findTestById(testId);
         try {
-            if (image != null){
-                String imageUrl = cloudinaryService.uploadFileOfTest(image);
+            if(test.isChangedImg()){
+                cloudinaryService.deleteFile(currentTest.getImage());
+                String imageUrl = cloudinaryService.uploadFile(image);
                 currentTest.setImage(imageUrl);
-            }
-            else {
-                currentTest.setImage(null);
             }
         } finally {
             testMapper.updateTest(currentTest, test);
