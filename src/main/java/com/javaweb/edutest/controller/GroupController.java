@@ -55,8 +55,8 @@ public class GroupController {
     }
 
     @PostMapping
-    public ResponseData<?> addGroup(@RequestPart GroupRequestDTO groupRequestDTO,
-                                    @RequestPart(value = "imageUrl", required = false) MultipartFile image
+        public ResponseData<?> addGroup(@RequestPart GroupRequestDTO groupRequestDTO,
+                                        @RequestPart(value = "imageUrl", required = false) MultipartFile image
                                     ) {
         try {
             return new ResponseData<>(groupService.addGroup(groupRequestDTO, image), HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());

@@ -29,7 +29,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public PageResponseDTO<?> getCategories(int pageNo, int pageSize, String searchName) {
+    public PageResponseDTO<?> getCategories(int pageNo, int pageSize, String searchName, boolean showAll) {
+        if (showAll){
+            List<CategoryResponseDTO> allCategories = categoryMapper.toCategoryResponseDTOs(categoryRepository.findAll());
+            return PaginationUtil.toPageResponse(allCategories);
+        }
         int totalRecords = categoryRepository.countByNameContainingIgnoreCase(searchName);
         Pageable pageable = PaginationUtil.createPageable(pageNo, pageSize, totalRecords);
         Page<CategoryWithQuestionCountDTO> categories = categoryRepository.findCategoriesWithQuestionCountDTO(searchName, pageable);

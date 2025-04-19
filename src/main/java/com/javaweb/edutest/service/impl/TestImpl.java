@@ -1,6 +1,7 @@
 package com.javaweb.edutest.service.impl;
 
 import com.javaweb.edutest.dto.request.QuestionRequestDTO;
+import com.javaweb.edutest.dto.response.PageResponseDTO;
 import com.javaweb.edutest.dto.response.QuestionResponseDTO;
 import com.javaweb.edutest.exception.ResourceNotFoundException;
 import com.javaweb.edutest.mapper.QuestionMapper;
@@ -12,14 +13,13 @@ import com.javaweb.edutest.repository.QuestionRepository;
 import com.javaweb.edutest.repository.TestRepository;
 import com.javaweb.edutest.service.QuestionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Primary
 @Service
 @RequiredArgsConstructor
 public class TestImpl implements QuestionService {
@@ -30,7 +30,7 @@ public class TestImpl implements QuestionService {
     private final TestRepository testRepository;
 
     @Override
-    public List<QuestionResponseDTO> getQuestions() {
+    public PageResponseDTO<QuestionResponseDTO> getQuestions(String content, List<Long> categoryIds, int pageNo, int PageSiae) {
         return null;
     }
 
@@ -45,7 +45,7 @@ public class TestImpl implements QuestionService {
     }
 
     @Override
-    public long addQuestion(QuestionRequestDTO questionRequestDTO) {
+    public long addQuestion(QuestionRequestDTO questionRequestDTO, MultipartFile image, List<MultipartFile> imageAnswers) {
         return 0;
     }
 
