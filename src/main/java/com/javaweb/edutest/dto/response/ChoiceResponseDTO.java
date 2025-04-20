@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ChoiceResponseDTO {
-    private long choiceId;
+    private long id;
     private String content;
     private String image;
     @JsonProperty("isCorrect")

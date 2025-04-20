@@ -16,7 +16,8 @@ public interface QuestionService {
     long addQuestion(QuestionRequestDTO questionRequestDTO, MultipartFile image, List<MultipartFile> imageAnswers) throws IOException;
     long addQuestionToTest(long testId, QuestionRequestDTO questionRequestDTO);
     void addQuestionFromLibraryToTest(long testId, Map<String, List<Long>> request);
-    void updateQuestion(long questionId, QuestionRequestDTO questionRequestDTO);
+    void updateQuestion(long questionId, QuestionRequestDTO questionRequestDTO,
+                        MultipartFile image, List<MultipartFile> imageAnswerFiles);
     void updateCategoriesOfQuestion(long questionId, List<Long> newCategoryIds);
     void deleteQuestion(long questionId);
 }

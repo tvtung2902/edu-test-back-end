@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
@@ -45,10 +46,10 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     Question getQuestionsAndChoicesByQuestionId(Long questionId);
 
     @Query("""
-    SELECT DISTINCT q FROM Question q
-    JOIN FETCH q.choices
-    JOIN FETCH q.categories
+    SELECT q FROM Question q
+    LEFT JOIN FETCH q.choices
+    LEFT JOIN FETCH q.categories
     WHERE q.id = :questionId
     """)
-    Question getQuestionById(long questionId);
+    Optional<Question> getQuestionById(long questionId);
 }

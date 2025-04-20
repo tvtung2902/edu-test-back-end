@@ -12,4 +12,5 @@ public class QuestionRequestDTO {
     private String explanation;
     private List<Long> categoryIds;
     private List <ChoiceRequestDTO> choices;
+    private boolean changedImg;
 }

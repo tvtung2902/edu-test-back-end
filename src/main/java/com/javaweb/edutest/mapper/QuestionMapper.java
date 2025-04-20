@@ -16,6 +16,7 @@ public interface QuestionMapper {
     List<QuestionResponseDTO> toQuestionResponseDTOs(List<Question> questions);
     Question toQuestion(QuestionRequestDTO questionRequestDTO);
     QuestionResponseDTO toQuestionResponseDTO(Question question);
+    @Mapping(target = "choices", ignore = true)
     void toQuestion(@MappingTarget Question question, QuestionRequestDTO questionRequestDTO);
     @Mapping(target = "questions", ignore = true)
     CategoryResponseDTO categoryToCategoryResponseDTO(Category category);

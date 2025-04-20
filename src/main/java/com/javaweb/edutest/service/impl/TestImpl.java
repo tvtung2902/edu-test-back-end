@@ -85,7 +85,7 @@ public class TestImpl implements QuestionService {
 
 
     @Override
-    public void updateQuestion(long questionId, QuestionRequestDTO questionRequestDTO) {
+    public void updateQuestion(long questionId, QuestionRequestDTO questionRequestDTO, MultipartFile image, List<MultipartFile> imageAnswerFiles) {
 
     }
 
