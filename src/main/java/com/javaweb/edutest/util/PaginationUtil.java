@@ -32,4 +32,12 @@ public class PaginationUtil {
                 .totalPages(page.getTotalPages())
                 .build();
     }
+    public static <T> PageResponseDTO<T> toPageResponse(List<T> list) {
+        return PageResponseDTO.<T>builder()
+                .data(list)
+                .pageNo(0)
+                .pageSize(list.size())
+                .totalPages(1)
+                .build();
+    }
 }

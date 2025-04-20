@@ -10,7 +10,7 @@ import java.util.List;
 public class QuestionRequestDTO {
     private String content;
     private String explanation;
-    private String image;
     private List<Long> categoryIds;
     private List <ChoiceRequestDTO> choices;
+    private boolean changedImg;
 }

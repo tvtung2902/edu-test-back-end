@@ -23,10 +23,11 @@ public class CategoryController {
     @GetMapping
     public ResponseData<?> getCategories(@RequestParam(defaultValue = "",required = false, value = "name") String searchName,
                                          @RequestParam(defaultValue = "0", required = false, value = "page-no") int pageNo,
-                                         @RequestParam(defaultValue = "2", required = false, value = "page-size") int pageSize
+                                         @RequestParam(defaultValue = "2", required = false, value = "page-size") int pageSize,
+                                         @RequestParam(defaultValue = "false", required = false, value = "show-all") boolean showAll
     ) {
         try {
-            return new ResponseData<>(categoryService.getCategories(pageNo, pageSize, searchName), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+            return new ResponseData<>(categoryService.getCategories(pageNo, pageSize, searchName, showAll), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
         }catch (Exception e) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
