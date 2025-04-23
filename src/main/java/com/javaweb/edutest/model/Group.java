@@ -20,8 +20,8 @@ public class Group extends AbstractEntity {
     private String code;
     private String image;
 
-    @ManyToMany(mappedBy = "ownerGroups")
-    private Set<User> members = new HashSet<>();
+    @OneToMany(mappedBy = "group")
+    private Set<GroupUser> groupUsers = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")

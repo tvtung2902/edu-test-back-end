@@ -15,9 +15,13 @@ public class User extends AbstractEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String username;
+    private String password;
+    private String name;
+    private String email;
+    private String image;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user")
+    @JoinColumn(name = "role_id")
     private Role role;
 
     @OneToMany(mappedBy = "owner")
@@ -27,16 +31,8 @@ public class User extends AbstractEntity {
     private Set<Comment> comments = new HashSet<>();
 
     @OneToMany(mappedBy = "user")
-    private Set<TestHistory> historyOfTests = new HashSet<>();
-
-    @ManyToMany
-    @JoinTable(
-            name = "user_group",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "group_id")
-    )
-    private Set<Group> ownerGroups = new HashSet<>();
+    private Set<GroupUser> groupUsers = new HashSet<>();
 
     @OneToMany(mappedBy = "owner")
-    private Set<Group> memberGroups = new HashSet<>();
+    private Set<Group> groupOfUsers = new HashSet<>();
 }

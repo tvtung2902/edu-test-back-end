@@ -1,7 +1,5 @@
 package com.javaweb.edutest.repository;
 
-import com.javaweb.edutest.model.Category;
-import com.javaweb.edutest.model.Choice;
 import com.javaweb.edutest.model.Question;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,9 +11,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
+    @EntityGraph(attributePaths = {"categories", "choices"})
     List<Question> findByQuestionTests_Test_Id(Long id);
 
     @EntityGraph(attributePaths = "categories")

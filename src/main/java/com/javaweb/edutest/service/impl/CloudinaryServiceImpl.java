@@ -20,27 +20,6 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         return uploadResult.get("secure_url").toString();
     }
 
-//    @Override
-//    public void uploadFileOfQuestion(QuestionRequestDTO questionRequestDTO, Map<String, MultipartFile> images) throws IOException {
-//        if (images.get("imageQuestion") != null){
-//            String imageQuestionUrl = uploadFileToCloudinary(images.get("imageQuestion"));
-//            questionRequestDTO.setImage(imageQuestionUrl);
-//        }
-//        List<ChoiceRequestDTO> choices = questionRequestDTO.getChoices();
-//        if(choices != null && !choices.isEmpty()) {
-//            for (int i = 0; i < choices.size(); i++){
-//                String key = "imageChoices" + i;
-//                if(images.containsKey(key)){
-//                    MultipartFile image = images.get(key);
-//                    if (image != null && !image.isEmpty()){
-//                        String imageChoiceUrl = uploadFileToCloudinary(image);
-//                        choices.get(i).setImage(imageChoiceUrl);
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     @Override
     public String uploadFile(MultipartFile image) throws IOException {
         if (image != null){
