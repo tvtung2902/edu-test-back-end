@@ -24,8 +24,8 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
         g.code AS code,
         g.image AS image,
         g.createdAt as createdAt,
-        SIZE(g.groupUsers) AS memberCount,
-        SIZE(g.tests) AS testsCount
+        SIZE(g.tests) AS testsCount,
+        SIZE(g.groupUsers) AS memberCount
         FROM Group g
         WHERE LOWER(g.name) LIKE LOWER(CONCAT('%', :searchName, '%'))
         ORDER BY g.id DESC""")

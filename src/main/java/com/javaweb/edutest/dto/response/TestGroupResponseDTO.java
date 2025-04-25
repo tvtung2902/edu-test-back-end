@@ -1,5 +1,6 @@
 package com.javaweb.edutest.dto.response;
 
+import com.javaweb.edutest.enums.TestGroupStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import java.util.List;
 public class TestGroupResponseDTO {
     private long id;
     private String name;
+    private String image;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private List<ParticipantResponseDTO> users;

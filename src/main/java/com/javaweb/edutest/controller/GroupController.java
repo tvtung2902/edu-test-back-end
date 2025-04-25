@@ -45,11 +45,25 @@ public class GroupController {
                                          @RequestParam(defaultValue = "", required = false, value = "name") String searchName,
                                          @RequestParam(defaultValue = "0", required = false, value = "page-no") int pageNo,
                                          @RequestParam(defaultValue = "2", required = false, value = "page-size") int pageSize,
-                                         @RequestParam(required = false, value = "status") TestGroupStatus status
+                                         @RequestParam(required = false, value = "status") TestGroupStatus status,
+                                         @RequestParam(required = false, value = "unassigned") boolean unassigned
     ) {
         try {
             return new ResponseData<>(groupService.getTestsOfGroup(groupId, pageNo, pageSize, searchName, status), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
         } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
+        }
+    }
+
+    @GetMapping("/{groupId}/tests/unassigned")
+    public ResponseData<?> getGroupTestsUnassigned(
+            @PathVariable long groupId
+    ) {
+        try {
+            return new ResponseData<>(groupService.getTestsOfGroupUnassigned(groupId), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+        } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
@@ -68,7 +82,7 @@ public class GroupController {
                                          @RequestParam(defaultValue = "", required = false) String searchName,
                                          @RequestParam(defaultValue = "0", required = false, value = "page-no") int pageNo,
                                          @RequestParam(defaultValue = "2", required = false, value = "page-size") int pageSize,
-                                         @RequestParam(required = false, value = "status") UserGroupStatus status) {
+                                         @RequestParam(defaultValue = "PENDING", required = false, value = "status") UserGroupStatus status) {
         try {
             return new ResponseData<>(groupService.getUsersOfGroup(groupId, searchName, pageNo, pageSize, status),
                     HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
@@ -109,6 +123,7 @@ public class GroupController {
             );
             return new ResponseData<>(HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
@@ -119,21 +134,23 @@ public class GroupController {
             groupService.addTestsToGroup(groupId, testInGroupRequestDTO);
             return new ResponseData<>(HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
 
-    @DeleteMapping("{groupId}/member")
+    @PutMapping("{groupId}/users")
     public ResponseData<?> deleteMemberInGroup(@PathVariable long groupId, @RequestBody UserGroupRequestDTO userGroupRequestDTO) {
         try {
             groupService.deleteMembersInGroup(groupId, userGroupRequestDTO);
             return new ResponseData<>(HttpStatus.ACCEPTED.value(), HttpStatus.ACCEPTED.getReasonPhrase());
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
 
-    @PutMapping("{groupId}/test")
+    @PutMapping("{groupId}/tests")
     public ResponseData<?> deleteTestInGroup(@PathVariable long groupId, @RequestBody TestGroupRequestDTO testInGroupRequestDTO) {
         try {
             groupService.deleteTestsInGroup(groupId, testInGroupRequestDTO);

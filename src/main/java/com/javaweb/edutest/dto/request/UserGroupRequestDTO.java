@@ -12,5 +12,5 @@ import java.util.List;
 public class UserGroupRequestDTO {
     @NotNull(message = "'users' cannot be null.")
     @NotEmpty(message = "'users' cannot be empty.")
-    private List<Long> users;
+    private List<Long> userIds;
 }

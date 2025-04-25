@@ -18,7 +18,9 @@ public interface GroupService {
     List<GroupResponseDTO> getGroupsOfUser(long userId);
     PageResponseDTO<TestGroupResponseDTO> getTestsOfGroup(long groupId, int pageNo, int pageSize,
                                                           String searchName, TestGroupStatus status);
-    PageResponseDTO<UserResponseDTO> getUsersOfGroup(long groupId, String search, int pageNo, int pageSize, UserGroupStatus status);
+    List<TestToAddGroupResponseDTO> getTestsOfGroupUnassigned(long groupId);
+    PageResponseDTO<UserResponseDTO> getUsersOfGroup(
+            long groupId, String search, int pageNo, int pageSize, UserGroupStatus status);
     long addGroup(GroupRequestDTO groupRequestDTO, MultipartFile image) throws IOException;
     void addMembersToGroup(long groupId, UserAddToGroupRequestDTO request);
     void addTestsToGroup(long groupId, TestGroupRequestDTO testInGroupRequestDTO);

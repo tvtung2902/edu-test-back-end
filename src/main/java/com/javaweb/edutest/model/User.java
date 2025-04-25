@@ -35,4 +35,7 @@ public class User extends AbstractEntity {
 
     @OneToMany(mappedBy = "owner")
     private Set<Group> groupOfUsers = new HashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    private Set<TestHistory> historyOfTests = new HashSet<>();
 }

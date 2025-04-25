@@ -117,15 +117,21 @@ public class SearchTestsRepository {
         // total page
         int totalPages = (int) Math.ceil((double) totalCount / pageSize);
 
-        
+
         StringBuilder sql = new StringBuilder();
         sql.append("""
         SELECT
             t.id,
+            t.image,
             t.name,
             t.start_date,
             t.end_date,
-            GROUP_CONCAT(DISTINCT CONCAT(u.id, '::', u.username, '::', u.avatar) SEPARATOR ';;') AS participants
+            GROUP_CONCAT(
+                 CASE
+                     WHEN th.group_id = :groupId THEN CONCAT(u.id, '::', u.username, '::', u.image)
+                 END
+                 SEPARATOR ';;'
+                 ) AS participants
         FROM test t
         JOIN group_test gt ON t.id = gt.test_id
         LEFT JOIN test_history th ON th.test_id = t.id
@@ -155,7 +161,7 @@ public class SearchTestsRepository {
         Query query = entityManager.createNativeQuery(sql.toString());
         query.setParameter("groupId", groupId);
         query.setParameter("limit", pageSize);
-        query.setParameter("offset", pageNo * pageSize);
+        query.setParameter("offset", pageNo == 0 ? pageSize : (pageNo - 1) * pageSize);
 
         if (searchName != null && !searchName.isBlank()) {
             query.setParameter("searchName", searchName);
@@ -171,10 +177,11 @@ public class SearchTestsRepository {
         // mapper to dto
         List<TestGroupResponseDTO> dtoList = resultList.stream().map(row -> {
             long id = ((Number) row[0]).longValue();
+            String image = (String) row[2];
             String name = (String) row[1];
-            LocalDateTime startDate = ((Timestamp) row[2]).toLocalDateTime();
-            LocalDateTime endDate = ((Timestamp) row[3]).toLocalDateTime();
-            String rawParticipants = (String) row[4];
+            LocalDateTime startDate = ((Timestamp) row[3]).toLocalDateTime();
+            LocalDateTime endDate = ((Timestamp) row[4]).toLocalDateTime();
+            String rawParticipants = (String) row[5];
 
             List<TestGroupResponseDTO.ParticipantResponseDTO> users = new ArrayList<>();
             if (rawParticipants != null && !rawParticipants.isEmpty()) {
@@ -190,7 +197,7 @@ public class SearchTestsRepository {
                 }
             }
 
-            return new TestGroupResponseDTO(id, name, startDate, endDate, users);
+            return new TestGroupResponseDTO(id, image, name, startDate, endDate, users);
         }).toList();
 
         return PageResponseDTO.<TestGroupResponseDTO>builder()
@@ -200,4 +207,6 @@ public class SearchTestsRepository {
                 .totalPages(totalPages)
                 .build();
     }
+
+
 }

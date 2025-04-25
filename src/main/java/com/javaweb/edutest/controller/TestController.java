@@ -117,16 +117,9 @@ public class TestController {
             return new ResponseData<>(HttpStatus.NO_CONTENT.value(), HttpStatus.NO_CONTENT.getReasonPhrase());
         }
         catch (Exception e) {
+            e.printStackTrace();
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
 
-    @DeleteMapping("/{testId}/question/{questionId}")
-    public ResponseData<?> updateQuestionsInTest(@PathVariable long testId, @PathVariable long questionId) {
-        try {
-            return null;
-        } catch (Exception e) {
-            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
-        }
-    }
 }

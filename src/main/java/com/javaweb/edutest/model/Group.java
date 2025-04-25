@@ -20,7 +20,7 @@ public class Group extends AbstractEntity {
     private String code;
     private String image;
 
-    @OneToMany(mappedBy = "group")
+    @OneToMany(mappedBy = "group", orphanRemoval = true, cascade = CascadeType.PERSIST)
     private Set<GroupUser> groupUsers = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,5 +1,6 @@
 package com.javaweb.edutest.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,4 +9,8 @@ import lombok.Setter;
 public class UserResponseDTO {
     private Long id;
     private String username;
+    private String name;
+    private String email;
+    @JsonProperty("avatar")
+    private String image;
 }

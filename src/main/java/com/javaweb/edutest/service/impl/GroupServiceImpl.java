@@ -15,14 +15,12 @@ import com.javaweb.edutest.model.GroupUser;
 import com.javaweb.edutest.model.Test;
 import com.javaweb.edutest.model.User;
 import com.javaweb.edutest.model.compositekey.GroupUserPK;
-import com.javaweb.edutest.repository.GroupRepository;
-import com.javaweb.edutest.repository.SearchTestsRepository;
-import com.javaweb.edutest.repository.TestRepository;
-import com.javaweb.edutest.repository.UserRepository;
+import com.javaweb.edutest.repository.*;
 import com.javaweb.edutest.service.CloudinaryService;
 import com.javaweb.edutest.service.GroupService;
 import com.javaweb.edutest.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +43,7 @@ public class GroupServiceImpl implements GroupService {
     private final CloudinaryService cloudinaryService;
     private final SearchTestsRepository searchTestsRepository;
     private final UserMapper userMapper;
+    private final GroupUserRepository groupUserRepository;
 
     @Override
     public PageResponseDTO<GroupResponseDTOWithCount> getGroups(String name, int pageNo, int pageSize) {
@@ -72,12 +72,28 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    public List<TestToAddGroupResponseDTO> getTestsOfGroupUnassigned(long groupId) {
+        List<Test> tests = testRepository.findTestsByUserIdNotInGroup(1L, groupId);
+        List<TestToAddGroupResponseDTO> testsToAdd = new ArrayList<>();
+        for (Test test : tests) {
+            TestToAddGroupResponseDTO build = TestToAddGroupResponseDTO.builder()
+                    .id(test.getId())
+                    .name(test.getName())
+                    .description(test.getDescription())
+                    .duration(test.getDuration())
+                    .build();
+            testsToAdd.add(build);
+        }
+        return testsToAdd;
+    }
+
+    @Override
     public PageResponseDTO<UserResponseDTO> getUsersOfGroup(long groupId, String search, int pageNo,
                                                             int pageSize, UserGroupStatus status) {
 
-        long totalRecord = userRepository.countUsersInGroupByName(search, groupId);
+        long totalRecord = userRepository.countUsersInGroupByName(search, groupId, status);
         Pageable pageable = PaginationUtil.createPageable(pageNo, pageSize, totalRecord);
-        Page<User> users = userRepository.findByNameAndGroupId(search, groupId, pageable);
+        Page<User> users = userRepository.findByNameAndGroupId(search, groupId, status, pageable);
         Page<UserResponseDTO> userResponseDTOs = users.map(userMapper::mapToUserDto);
         return PaginationUtil.toPageResponse(userResponseDTOs);
     }
@@ -106,23 +122,27 @@ public class GroupServiceImpl implements GroupService {
 
             GroupUserPK groupUserPK = new GroupUserPK(user.getId(), groupId);
 
-            boolean userExistsInGroup = currentGroup.getGroupUsers().stream()
-                    .anyMatch(gu -> gu.getId().equals(groupUserPK));
+            boolean userExistsInGroupWithPendingStatus = currentGroup.getGroupUsers().stream()
+                    .anyMatch(gu -> gu.getId().equals(groupUserPK) && gu.getUserGroupStatus() == UserGroupStatus.PENDING);
 
-            if (userExistsInGroup) {
-                continue;
+            if (userExistsInGroupWithPendingStatus) {
+                GroupUser groupUser = groupUserRepository.findById(groupUserPK).orElseThrow(
+                        () -> new ResourceNotFoundException("Group not found with id: " + groupUserPK)
+                );
+                groupUser.setUserGroupStatus(UserGroupStatus.JOINED);
+                groupUserRepository.save(groupUser);
             }
+            else {
+                GroupUser newGroupUser = new GroupUser();
+                newGroupUser.setId(groupUserPK);
+                newGroupUser.setUser(user);
+                newGroupUser.setGroup(currentGroup);
+                newGroupUser.setUserGroupStatus(UserGroupStatus.JOINED);
 
-            GroupUser newGroupUser = new GroupUser();
-            newGroupUser.setId(groupUserPK);
-            newGroupUser.setUser(user);
-            newGroupUser.setGroup(currentGroup);
-            newGroupUser.setUserGroupStatus(UserGroupStatus.JOINED);
-
-            currentGroup.getGroupUsers().add(newGroupUser);
+                currentGroup.getGroupUsers().add(newGroupUser);
+            }
         }
     }
-
 
     @Override
     public void addTestsToGroup(long groupId, TestGroupRequestDTO testInGroupRequestDTO) {
@@ -133,7 +153,6 @@ public class GroupServiceImpl implements GroupService {
             currentGroup.getTests().add(test);
         }
     }
-
 
     @Override
     public String updateGroup(long groupId, GroupRequestDTO groupRequestDTO, MultipartFile image) throws IOException {
@@ -153,19 +172,13 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void deleteMembersInGroup(long groupId, UserGroupRequestDTO request) {
-        List<Long> userIds = request.getUsers();
-        Group currentGroup = findGroupById(groupId);
-
-        for (Long userId : userIds) {
+        request.getUserIds().forEach(userId -> {
             GroupUserPK groupUserPK = new GroupUserPK(userId, groupId);
-
-            GroupUser groupUser = currentGroup.getGroupUsers().stream()
-                    .filter(gu -> gu.getId().equals(groupUserPK))
-                    .findFirst()
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found in this group"));
-
-            currentGroup.getGroupUsers().remove(groupUser);
-        }
+            GroupUser groupUser = groupUserRepository.findById(groupUserPK).orElseThrow(
+                    () -> new ResourceNotFoundException("Group not found with id: " + groupUserPK)
+            );
+            groupUserRepository.delete(groupUser);
+        }) ;
     }
 
     @Override
