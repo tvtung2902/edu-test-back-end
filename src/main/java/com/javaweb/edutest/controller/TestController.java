@@ -1,8 +1,6 @@
 package com.javaweb.edutest.controller;
 
-import com.javaweb.edutest.dto.request.QuestionRequestDTO;
-import com.javaweb.edutest.dto.request.QuestionTestRequestDTO;
-import com.javaweb.edutest.dto.request.TestRequestDTO;
+import com.javaweb.edutest.dto.request.*;
 import com.javaweb.edutest.dto.response.ResponseData;
 import com.javaweb.edutest.dto.response.TestResponseDTO1;
 import com.javaweb.edutest.service.QuestionService;
@@ -90,6 +88,26 @@ public class TestController {
         }
     }
 
+    @PutMapping("/{testId}/question/sort")
+    public ResponseData<?> sortQuestionInTest(@PathVariable long testId, @RequestBody List<SortQuestionTestDTO> request) {
+        try {
+            questionService.sortQuestionsInTest(testId, request);
+            return new ResponseData<>(HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
+        } catch (Exception e) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
+        }
+    }
+
+    @PutMapping("/{testId}/questions")
+    public ResponseData<?> deleteQuestionFromTest(@PathVariable long testId, @RequestBody DeleteQuestionTestDTO request) {
+        try {
+            questionService.deleteQuestionFromTest(testId, request);
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), HttpStatus.ACCEPTED.getReasonPhrase());
+        } catch (Exception e) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
+        }
+    }
+
     @PutMapping("/{testId}")
     public ResponseData<?> updateTest(@PathVariable long testId,
                                       @RequestPart("data") @Valid TestRequestDTO testRequestDTO,
@@ -121,5 +139,4 @@ public class TestController {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
-
 }

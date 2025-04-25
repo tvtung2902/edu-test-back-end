@@ -41,4 +41,6 @@ public interface TestRepository extends JpaRepository<Test, Long> {
 """)
     List<Test> findTestsByUserIdNotInGroup(@Param("userId") Long userId,
                                                                 @Param("groupId") Long groupId);
+
+
 }

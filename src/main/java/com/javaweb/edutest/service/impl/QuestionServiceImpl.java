@@ -1,8 +1,6 @@
 package com.javaweb.edutest.service.impl;
 
-import com.javaweb.edutest.dto.request.ChoiceRequestDTO;
-import com.javaweb.edutest.dto.request.QuestionRequestDTO;
-import com.javaweb.edutest.dto.request.QuestionTestRequestDTO;
+import com.javaweb.edutest.dto.request.*;
 import com.javaweb.edutest.dto.response.PageResponseDTO;
 import com.javaweb.edutest.dto.response.QuestionResponseDTO;
 import com.javaweb.edutest.exception.ResourceNotFoundException;
@@ -14,6 +12,7 @@ import com.javaweb.edutest.model.QuestionTest;
 import com.javaweb.edutest.model.compositekey.QuestionTestPK;
 import com.javaweb.edutest.repository.CategoryRepository;
 import com.javaweb.edutest.repository.QuestionRepository;
+import com.javaweb.edutest.repository.QuestionTestRepository;
 import com.javaweb.edutest.repository.TestRepository;
 import com.javaweb.edutest.service.CloudinaryService;
 import com.javaweb.edutest.service.QuestionService;
@@ -42,6 +41,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final CategoryRepository categoryRepository;
     private final TestRepository testRepository;
     private final CloudinaryService cloudinaryService;
+    private final QuestionTestRepository questionTestRepository;
 
     @Override
     public PageResponseDTO<QuestionResponseDTO> getQuestions(String content, List<Long> categoryIds, int pageNo, int pageSize) {
@@ -108,11 +108,16 @@ public class QuestionServiceImpl implements QuestionService {
         var test = testRepository.findById(testId).orElseThrow(
                 () -> new ResourceNotFoundException("test not found with id " +testId)
         );
+        var lastQuestionInTest = questionTestRepository.findTopByTestIdOrderByOrderNumberDesc(testId).orElseThrow(
+                () -> new ResourceNotFoundException("last question not found with id " +testId)
+        );
+        int orderNumber = lastQuestionInTest.getOrderNumber() + 1;
         QuestionTest questionTest = QuestionTest.builder()
                 .id(QuestionTestPK.builder()
                         .questionId(newQuestion.getId())
                         .testId(test.getId())
                         .build())
+                .orderNumber(orderNumber)
                 .question(newQuestion)
                 .test(test)
                 .build();
@@ -263,6 +268,35 @@ public class QuestionServiceImpl implements QuestionService {
         });
         questionRepository.deleteById(questionId);
 
+    }
+
+    @Override
+    public void deleteQuestionFromTest(long testId, DeleteQuestionTestDTO request) {
+        var questionTests = questionTestRepository.
+                                findByTestIdAndOrderNumberLessThanEqual(testId, request.getOrderNumber());
+        for (QuestionTest questionTest : questionTests) {
+            if (request.getOrderNumber() == questionTest.getOrderNumber()) {
+                questionTestRepository.delete(questionTest);
+            }
+            else {
+                questionTest.setOrderNumber(questionTest.getOrderNumber() - 1);
+            }
+        }
+    }
+
+    @Override
+    public void sortQuestionsInTest(long testId, List<SortQuestionTestDTO> request) {
+        List<QuestionTest> questionTests = questionTestRepository.findByTestId(testId);
+        Map<Long, Integer> questionTestMap = new HashMap<>();
+        request.forEach(questionTest -> {
+           questionTestMap.put(questionTest.getQuestionId(), questionTest.getOrderNumber());
+        });
+        questionTests.forEach(questionTest -> {
+            long questionId = questionTest.getId().getQuestionId();
+            if(questionTestMap.containsKey(questionId)){
+                questionTest.setOrderNumber(questionTestMap.get(questionId));
+            }
+        });
     }
 
     private void addCategoriesToQuestion(List<Long> categoryIds, Question question) {
