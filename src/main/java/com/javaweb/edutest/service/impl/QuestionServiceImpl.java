@@ -2,6 +2,7 @@ package com.javaweb.edutest.service.impl;
 
 import com.javaweb.edutest.dto.request.ChoiceRequestDTO;
 import com.javaweb.edutest.dto.request.QuestionRequestDTO;
+import com.javaweb.edutest.dto.request.QuestionTestRequestDTO;
 import com.javaweb.edutest.dto.response.PageResponseDTO;
 import com.javaweb.edutest.dto.response.QuestionResponseDTO;
 import com.javaweb.edutest.exception.ResourceNotFoundException;
@@ -66,8 +67,8 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
-    public long addQuestion(QuestionRequestDTO questionRequestDTO, MultipartFile image, List<MultipartFile> imageAnswerFiles) throws IOException {
-        long newQuestionId;
+    public Question addQuestion(QuestionRequestDTO questionRequestDTO, MultipartFile image, List<MultipartFile> imageAnswerFiles) throws IOException {
+        Question newQuestion;
         String imageUrl = null;
         List<String> imageAnswers = new ArrayList<>();
         try{
@@ -76,9 +77,9 @@ public class QuestionServiceImpl implements QuestionService {
                 handleImage(imageAnswers, imageAnswerFile);
             });
         } finally{
-            newQuestionId = addQuestionToDB(questionRequestDTO, imageUrl, imageAnswers).getId();
+            newQuestion = addQuestionToDB(questionRequestDTO, imageUrl, imageAnswers);
         }
-        return newQuestionId;
+        return newQuestion;
     }
 
     private void handleImage(List<String> imageAnswers, MultipartFile imageAnswerFile) {
@@ -97,31 +98,35 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
-    public long addQuestionToTest(long testId, QuestionRequestDTO questionRequestDTO) {
-//        var newQuestion = addQuestionToDB(questionRequestDTO);
-//        var test = testRepository.findById(testId).orElseThrow(
-//                () -> new ResourceNotFoundException("test not found with id " +testId)
-//        );
-//        QuestionTest questionTest = QuestionTest.builder()
-//                .id(QuestionTestPK.builder()
-//                        .questionId(newQuestion.getId())
-//                        .testId(test.getId())
-//                        .build())
-//                .question(newQuestion)
-//                .test(test)
-//                .build();
-//        newQuestion.getQuestionTests().add(questionTest);
-//        questionRepository.save(newQuestion);
-//        return newQuestion.getId();
-        return -1;
-    }
-
-    @Override
-    public void addQuestionFromLibraryToTest(long testId, Map<String, List<Long>> request) {
+    public long addQuestionToTest(long testId, QuestionRequestDTO questionRequestDTO, MultipartFile image, List<MultipartFile> imageAnswers) {
+        Question newQuestion = null;
+        try {
+            newQuestion = addQuestion(questionRequestDTO, image, imageAnswers);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         var test = testRepository.findById(testId).orElseThrow(
                 () -> new ResourceNotFoundException("test not found with id " +testId)
         );
-        List<Long> questionIds = request.get("questionIds");
+        QuestionTest questionTest = QuestionTest.builder()
+                .id(QuestionTestPK.builder()
+                        .questionId(newQuestion.getId())
+                        .testId(test.getId())
+                        .build())
+                .question(newQuestion)
+                .test(test)
+                .build();
+        newQuestion.getQuestionTests().add(questionTest);
+        questionRepository.save(newQuestion);
+        return newQuestion.getId();
+    }
+
+    @Override
+    public void addQuestionFromLibraryToTest(long testId, QuestionTestRequestDTO request) {
+        var test = testRepository.findById(testId).orElseThrow(
+                () -> new ResourceNotFoundException("test not found with id " +testId)
+        );
+        List<Long> questionIds = request.getQuestionIds();
         List<Question> questions = new ArrayList<>();
         questionIds.forEach(questionId -> {
             Question question = findQuestionById(questionId);
@@ -131,10 +136,10 @@ public class QuestionServiceImpl implements QuestionService {
                             .testId(test.getId())
                             .build())
                     .test(test)
-                    .question(findQuestionById(questionId))
+                    .question(question)
                     .build();
             question.getQuestionTests().add(questionTest);
-            questions.add(findQuestionById(questionId));
+            questions.add(question);
         });
 
         questionRepository.saveAll(questions);

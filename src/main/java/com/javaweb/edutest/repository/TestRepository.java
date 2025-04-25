@@ -1,13 +1,16 @@
 package com.javaweb.edutest.repository;
 
 import com.javaweb.edutest.dto.response.TestResponseDTO;
+import com.javaweb.edutest.dto.response.TestToAddGroupResponseDTO;
 import com.javaweb.edutest.model.Test;
-import org.hibernate.mapping.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
 
 public interface TestRepository extends JpaRepository<Test, Long> {
 
@@ -26,4 +29,16 @@ public interface TestRepository extends JpaRepository<Test, Long> {
             ORDER BY t.id DESC
             """)
     Page<TestResponseDTO> findTests(String searchName, Pageable pageable);
+
+    @Query("""
+    SELECT t FROM Test t
+    WHERE t.owner.id = :userId
+    AND t.id NOT IN (
+        SELECT test.id FROM Group g
+        JOIN g.tests test
+        WHERE g.id = :groupId
+    )
+""")
+    List<Test> findTestsByUserIdNotInGroup(@Param("userId") Long userId,
+                                                                @Param("groupId") Long groupId);
 }

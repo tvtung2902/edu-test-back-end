@@ -68,7 +68,7 @@ public class QuestionController {
             @RequestPart(value = "imageAnswers", required = false) List<MultipartFile> imageAnswers
     ){
         try {
-            return new ResponseData<>(questionService.addQuestion(questionRequestDTO, image, imageAnswers), HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
+            return new ResponseData<>(questionService.addQuestion(questionRequestDTO, image, imageAnswers).getId(), HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
         } catch (Exception e){
             e.printStackTrace();
             System.out.println(e.getMessage());

@@ -10,9 +10,9 @@ public interface GroupResponseDTOWithCount {
     String getDescription();
     String getCode();
     String getImage();
-    @JsonProperty("numberOfTests")
-    int getMemberCount();
     @JsonProperty("numberOfMembers")
+    int getMemberCount();
+    @JsonProperty("numberOfTests")
     int getTestsCount();
     Date getCreatedAt();
 }

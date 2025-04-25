@@ -23,6 +23,10 @@ public class TestHistory extends AbstractEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private Group group;
+
     @ManyToMany
     @JoinTable(
             name = "history_choice_of_user",
@@ -30,5 +34,4 @@ public class TestHistory extends AbstractEntity {
             inverseJoinColumns = @JoinColumn(name = "choice_id")
     )
     private Set<Choice> choices = new HashSet<>();
-
 }

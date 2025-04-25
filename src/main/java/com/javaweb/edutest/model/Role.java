@@ -15,8 +15,6 @@ public class Role extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Enumerated(EnumType.STRING)
-    private UserStatus userStatus;
 
     @OneToMany(mappedBy = "role")
     private Set<User> users = new HashSet<>();

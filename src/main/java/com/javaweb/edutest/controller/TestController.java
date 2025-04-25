@@ -1,12 +1,10 @@
 package com.javaweb.edutest.controller;
 
 import com.javaweb.edutest.dto.request.QuestionRequestDTO;
+import com.javaweb.edutest.dto.request.QuestionTestRequestDTO;
 import com.javaweb.edutest.dto.request.TestRequestDTO;
 import com.javaweb.edutest.dto.response.ResponseData;
 import com.javaweb.edutest.dto.response.TestResponseDTO1;
-import com.javaweb.edutest.model.Question;
-import com.javaweb.edutest.model.Test;
-import com.javaweb.edutest.service.CloudinaryService;
 import com.javaweb.edutest.service.QuestionService;
 import com.javaweb.edutest.service.TestService;
 import jakarta.validation.Valid;
@@ -27,7 +25,6 @@ import java.util.*;
 public class TestController {
     private final TestService testService;
     private final QuestionService questionService;
-    private final CloudinaryService cloudinaryService;
 
     @GetMapping
     public ResponseData<?> getTests(
@@ -69,10 +66,12 @@ public class TestController {
 
     @PostMapping("/{testId}/question")
     public ResponseData<?> addQuestionsToTest(@PathVariable long testId,
-                                              @RequestBody QuestionRequestDTO questionRequestDTO
+                                              @RequestPart(value = "dataQuestion") QuestionRequestDTO questionRequestDTO,
+                                              @RequestPart(value = "imageQuestion", required = false) MultipartFile image,
+                                              @RequestPart(value = "imageAnswers", required = false) List<MultipartFile> imageAnswers
                                              ){
         try {
-            return new ResponseData<>(questionService.addQuestionToTest(testId, questionRequestDTO), HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
+            return new ResponseData<>(questionService.addQuestionToTest(testId, questionRequestDTO, image, imageAnswers), HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -82,7 +81,7 @@ public class TestController {
     }
 
     @PostMapping("/{testId}/questions/from-library")
-    public ResponseData<?> addQuestionsFromLibraryToTest(@PathVariable long testId, @RequestBody Map<String, List<Long>> request) {
+    public ResponseData<?> addQuestionsFromLibraryToTest(@PathVariable long testId, @RequestBody QuestionTestRequestDTO request) {
         try {
             questionService.addQuestionFromLibraryToTest(testId, request);
             return new ResponseData<>(HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
@@ -118,16 +117,9 @@ public class TestController {
             return new ResponseData<>(HttpStatus.NO_CONTENT.value(), HttpStatus.NO_CONTENT.getReasonPhrase());
         }
         catch (Exception e) {
+            e.printStackTrace();
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
 
-    @DeleteMapping("/{testId}/question/{questionId}")
-    public ResponseData<?> updateQuestionsInTest(@PathVariable long testId, @PathVariable long questionId) {
-        try {
-            return null;
-        } catch (Exception e) {
-            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
-        }
-    }
 }
