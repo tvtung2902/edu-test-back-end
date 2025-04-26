@@ -1,11 +1,10 @@
 package com.javaweb.edutest.service.impl;
 
-import com.javaweb.edutest.dto.request.ChoiceRequestDTO;
-import com.javaweb.edutest.dto.request.QuestionRequestDTO;
-import com.javaweb.edutest.dto.request.QuestionTestRequestDTO;
-import com.javaweb.edutest.dto.response.PageResponseDTO;
-import com.javaweb.edutest.dto.response.QuestionResponseDTO;
+import com.javaweb.edutest.dto.request.*;
+import com.javaweb.edutest.dto.response.*;
 import com.javaweb.edutest.exception.ResourceNotFoundException;
+import com.javaweb.edutest.mapper.CategoryMapper;
+import com.javaweb.edutest.mapper.ChoiceMapper;
 import com.javaweb.edutest.mapper.QuestionMapper;
 import com.javaweb.edutest.model.Category;
 import com.javaweb.edutest.model.Choice;
@@ -14,6 +13,7 @@ import com.javaweb.edutest.model.QuestionTest;
 import com.javaweb.edutest.model.compositekey.QuestionTestPK;
 import com.javaweb.edutest.repository.CategoryRepository;
 import com.javaweb.edutest.repository.QuestionRepository;
+import com.javaweb.edutest.repository.QuestionTestRepository;
 import com.javaweb.edutest.repository.TestRepository;
 import com.javaweb.edutest.service.CloudinaryService;
 import com.javaweb.edutest.service.QuestionService;
@@ -42,14 +42,22 @@ public class QuestionServiceImpl implements QuestionService {
     private final CategoryRepository categoryRepository;
     private final TestRepository testRepository;
     private final CloudinaryService cloudinaryService;
+    private final QuestionTestRepository questionTestRepository;
+    private final CategoryMapper categoryMapper;
+    private final ChoiceMapper choiceMapper;
 
     @Override
-    public PageResponseDTO<QuestionResponseDTO> getQuestions(String content, List<Long> categoryIds, int pageNo, int pageSize) {
-        long totalRecords = questionRepository.countByContentAndCategories(content, categoryIds);
+    public PageResponseDTO<QuestionResponseDTO> getQuestions(String content, List<Long> categoryIds, int pageNo, int pageSize, Long unassignedTestId) {
+        long totalRecords = questionRepository.countByContentAndCategories(content, categoryIds, unassignedTestId);
         Pageable page = PaginationUtil.createPageable(pageNo, pageSize, totalRecords);
-        Page<Question> questions = questionRepository.getQuestions(content, categoryIds, page);
+        Page<Question> questions = questionRepository.getQuestions(content, categoryIds, unassignedTestId, page);
         Page<QuestionResponseDTO> questionResponseDTOs = questions.map(questionMapper::toQuestionResponseDTO);
         return PaginationUtil.toPageResponse(questionResponseDTOs);
+    }
+
+    @Override
+    public PageResponseDTO<QuestionInTestResponseDTO> getQuestionsUnassignedInTest(String testId, String content, List<Long> categoryIds, int pageNo, int pageSize) {
+        return null;
     }
 
     @Override
@@ -61,8 +69,24 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<QuestionResponseDTO> getQuestionsInTest(long testId) {
-        return questionMapper.toQuestionResponseDTOs(questionRepository.findByQuestionTests_Test_Id(testId));
+    public List<QuestionInTestResponseDTO> getQuestionsInTest(long testId) {
+        var questionInTest = questionRepository.
+                                    findByQuestionTests_Test_IdOrderByQuestionTests_OrderNumberAsc(testId);
+        return questionInTest.stream()
+                .map(questionTest -> {
+                    List<ChoiceResponseDTO> choiceResponseDTOS = choiceMapper.toChoiceResponseDTOs(questionTest.getQuestion().getChoices().stream().toList());
+                    return new QuestionInTestResponseDTO(
+                            questionTest.getQuestion().getId(),
+                            questionTest.getQuestion().getContent(),
+                            questionTest.getQuestion().getExplanation(),
+                            questionTest.getQuestion().getImage(),
+                            categoryMapper.toCategoryResponseDTOs(questionTest.getQuestion().getCategories().stream().toList()).stream().collect(Collectors.toSet()),
+                            choiceResponseDTOS,
+                            questionTest.getQuestion().getCreatedAt(),
+                            questionTest.getOrderNumber()
+                            );
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -108,11 +132,17 @@ public class QuestionServiceImpl implements QuestionService {
         var test = testRepository.findById(testId).orElseThrow(
                 () -> new ResourceNotFoundException("test not found with id " +testId)
         );
+        var lastQuestionInTest = questionTestRepository.findTopByTestIdOrderByOrderNumberDesc(testId);
+        int orderNumber = 1;
+        if(lastQuestionInTest.isPresent()){
+            orderNumber = lastQuestionInTest.get().getOrderNumber() + 1;
+        }
         QuestionTest questionTest = QuestionTest.builder()
                 .id(QuestionTestPK.builder()
                         .questionId(newQuestion.getId())
                         .testId(test.getId())
                         .build())
+                .orderNumber(orderNumber)
                 .question(newQuestion)
                 .test(test)
                 .build();
@@ -126,23 +156,26 @@ public class QuestionServiceImpl implements QuestionService {
         var test = testRepository.findById(testId).orElseThrow(
                 () -> new ResourceNotFoundException("test not found with id " +testId)
         );
+        int orderNumberToAdd = 0;
+        var lastQuestionInTest = questionTestRepository.findTopByTestIdOrderByOrderNumberDesc(testId);
+        if (lastQuestionInTest.isPresent()){
+            orderNumberToAdd = lastQuestionInTest.get().getOrderNumber();
+        }
+
         List<Long> questionIds = request.getQuestionIds();
-        List<Question> questions = new ArrayList<>();
-        questionIds.forEach(questionId -> {
+        for (Long questionId : questionIds) {
             Question question = findQuestionById(questionId);
             QuestionTest questionTest = QuestionTest.builder()
                     .id(QuestionTestPK.builder()
                             .questionId(questionId)
                             .testId(test.getId())
                             .build())
+                    .orderNumber(++orderNumberToAdd)
                     .test(test)
                     .question(question)
                     .build();
-            question.getQuestionTests().add(questionTest);
-            questions.add(question);
-        });
-
-        questionRepository.saveAll(questions);
+            questionTestRepository.save(questionTest);
+        }
     }
 
     @Override
@@ -262,6 +295,42 @@ public class QuestionServiceImpl implements QuestionService {
             }
         });
         questionRepository.deleteById(questionId);
+
+    }
+
+    @Override
+    public void deleteQuestionFromTest(long testId, DeleteQuestionTestDTO request) {
+        var questionTests = questionTestRepository.
+                                findByTestIdAndOrderNumberGreaterThanEqual(testId, request.getOrderNumber());
+        for (QuestionTest questionTest : questionTests) {
+            if (request.getOrderNumber() == questionTest.getOrderNumber()) {
+                questionTestRepository.delete(questionTest);
+            }
+            else {
+                questionTest.setOrderNumber(questionTest.getOrderNumber() - 1);
+                questionTestRepository.save(questionTest);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void sortQuestionsInTest(long testId, List<SortQuestionTestDTO> request) {
+        List<QuestionTest> questionTests = questionTestRepository.findByTestId(testId);
+
+        Map<Long, Integer> questionTestMap = new HashMap<>();
+        for (SortQuestionTestDTO dto : request) {
+            questionTestMap.put(dto.getQuestionId(), dto.getOrderNumber());
+        }
+
+        for (QuestionTest questionTest : questionTests) {
+            long questionId = questionTest.getId().getQuestionId();
+            if (questionTestMap.containsKey(questionId)) {
+                questionTest.setOrderNumber(questionTestMap.get(questionId));
+            }
+        }
+
+        questionTestRepository.saveAll(questionTests);
 
     }
 

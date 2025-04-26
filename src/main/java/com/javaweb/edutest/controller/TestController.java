@@ -1,8 +1,7 @@
 package com.javaweb.edutest.controller;
 
-import com.javaweb.edutest.dto.request.QuestionRequestDTO;
-import com.javaweb.edutest.dto.request.QuestionTestRequestDTO;
-import com.javaweb.edutest.dto.request.TestRequestDTO;
+import com.javaweb.edutest.dto.request.*;
+import com.javaweb.edutest.dto.response.QuestionResponseDTO;
 import com.javaweb.edutest.dto.response.ResponseData;
 import com.javaweb.edutest.dto.response.TestResponseDTO1;
 import com.javaweb.edutest.service.QuestionService;
@@ -50,6 +49,33 @@ public class TestController {
         }
     }
 
+    @GetMapping("/{testId}/questions")
+    public ResponseData<?> getQuestionsInTest(@PathVariable long testId) {
+        try {
+            var result = questionService.getQuestionsInTest(testId);
+            return new ResponseData<>(result, HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
+        }
+    }
+
+    @GetMapping("/{testId}/questions/unassigned")
+    public ResponseData<?> getQuestionsUnassignedToTest(@PathVariable long testId,
+                                                        @RequestParam(defaultValue = "",required = false, value = "content") String content,
+                                                        @RequestParam(defaultValue = "0", required = false, value = "page-no") int pageNo,
+                                                        @RequestParam(defaultValue = "2", required = false, value = "page-size") int pageSize,
+                                                        @RequestParam(required = false, value = "categoryIds") List<Long> categoryIds
+    ) {
+        try {
+            var result = questionService.getQuestionsInTest(testId);
+            return new ResponseData<>(result, HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
+        }
+    }
+
     @PostMapping
     public ResponseData<?> addTest(@RequestPart("data") @Valid TestRequestDTO testRequestDTO,
                                    @RequestPart(value = "imageUrl", required = false) MultipartFile image) {
@@ -86,6 +112,27 @@ public class TestController {
             questionService.addQuestionFromLibraryToTest(testId, request);
             return new ResponseData<>(HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
         } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
+        }
+    }
+
+    @PutMapping("/{testId}/question/sort")
+    public ResponseData<?> sortQuestionInTest(@PathVariable long testId, @RequestBody List<SortQuestionTestDTO> request) {
+        try {
+            questionService.sortQuestionsInTest(testId, request);
+            return new ResponseData<>(HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
+        } catch (Exception e) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
+        }
+    }
+
+    @PutMapping("/{testId}/questions")
+    public ResponseData<?> deleteQuestionFromTest(@PathVariable long testId, @RequestBody DeleteQuestionTestDTO request) {
+        try {
+            questionService.deleteQuestionFromTest(testId, request);
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), HttpStatus.ACCEPTED.getReasonPhrase());
+        } catch (Exception e) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
@@ -121,5 +168,4 @@ public class TestController {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
-
 }

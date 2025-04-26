@@ -29,10 +29,12 @@ public class QuestionController {
             @RequestParam(defaultValue = "",required = false, value = "content") String content,
             @RequestParam(defaultValue = "0", required = false, value = "page-no") int pageNo,
             @RequestParam(defaultValue = "2", required = false, value = "page-size") int pageSize,
-            @RequestParam(required = false, value = "categoryIds") List<Long> categoryIds
+            @RequestParam(required = false, value = "categoryIds") List<Long> categoryIds,
+            @RequestParam(required = false, value = "unassigned-test") Long unassignedTestId
     ){
         try {
-            return new ResponseData<>(questionService.getQuestions(content, categoryIds, pageNo, pageSize)
+            return new ResponseData<>(questionService.getQuestions(content, categoryIds,
+                    pageNo, pageSize, unassignedTestId)
                     , HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
         }catch (Exception e){
             e.printStackTrace();
@@ -47,16 +49,6 @@ public class QuestionController {
             return new ResponseData<>(questionService.getQuestionById(questionId), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
         }catch (Exception e){
             log.error(e.getMessage());
-            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
-        }
-    }
-
-    @GetMapping("tests/{testId}")
-    public ResponseData<?> getQuestionsInTest(@PathVariable long testId) {
-        try {
-            return new ResponseData<>(questionService.getQuestionsInTest(testId), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
-        } catch (Exception e) {
-            e.printStackTrace();
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
         }
     }
