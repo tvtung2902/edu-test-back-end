@@ -45,8 +45,7 @@ public class GroupController {
                                          @RequestParam(defaultValue = "", required = false, value = "name") String searchName,
                                          @RequestParam(defaultValue = "0", required = false, value = "page-no") int pageNo,
                                          @RequestParam(defaultValue = "2", required = false, value = "page-size") int pageSize,
-                                         @RequestParam(required = false, value = "status") TestGroupStatus status,
-                                         @RequestParam(required = false, value = "unassigned") boolean unassigned
+                                         @RequestParam(required = false, value = "status") TestGroupStatus status
     ) {
         try {
             return new ResponseData<>(groupService.getTestsOfGroup(groupId, pageNo, pageSize, searchName, status), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());

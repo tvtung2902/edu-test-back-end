@@ -9,6 +9,6 @@ import java.util.Optional;
 
 public interface QuestionTestRepository extends JpaRepository<QuestionTest, QuestionTestPK> {
     Optional<QuestionTest> findTopByTestIdOrderByOrderNumberDesc(long testId);
-    List<QuestionTest> findByTestIdAndOrderNumberLessThanEqual(long testId, int orderNumber);
+    List<QuestionTest> findByTestIdAndOrderNumberGreaterThanEqual(long testId, int orderNumber);
     List<QuestionTest> findByTestId(long testId);
 }

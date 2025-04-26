@@ -13,6 +13,7 @@ import java.util.Set;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @AllArgsConstructor
+@NoArgsConstructor
 public class QuestionResponseDTO {
     private long id;
     private String content;
